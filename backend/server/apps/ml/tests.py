@@ -1,5 +1,8 @@
 from django.test import TestCase
 
+import inspect
+from apps.ml.registry import MLRegistry
+
 from apps.ml.classifier.xgboost import XGBoostClassifier
 
 class MLTests(TestCase):
@@ -22,3 +25,21 @@ class MLTests(TestCase):
         self.assertEqual('OK', response['status'])
         self.assertTrue('label' in response)
         self.assertEqual('Wait', response['label'])
+
+    def test_registry(self):
+        registry = MLRegistry()
+        self.assertEqual(len(registry.endpoints), 0)
+        endpoint_name = "classifier"
+        algorithm_object = XGBoostClassifier()
+        algorithm_name = "xgboost"
+        algorithm_status = "production"
+        algorithm_version = "0.0.1"
+        algorithm_owner = "Milan"
+        algorithm_description = "XGBoostClassifier with simple pre- and post-processing"
+        algorithm_code = inspect.getsource(XGBoostClassifier)
+        # add to registry
+        registry.add_algorithm(endpoint_name, algorithm_object, algorithm_name,
+                    algorithm_status, algorithm_version, algorithm_owner,
+                    algorithm_description, algorithm_code)
+        # there should be one endpoint available
+        self.assertEqual(len(registry.endpoints), 1)
